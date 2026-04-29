@@ -104,6 +104,15 @@ def can_model_chat(client: LlamaStackClient, model_id: str) -> bool:
     return True
 
 
+def list_chat_models(client: LlamaStackClient) -> list[str]:
+    return [
+        model_id
+        for m in client.models.list()
+        for model_id in [_get_model_id(m)]
+        if model_id and _is_llm_model(m) and "guard" not in model_id
+    ]
+
+
 def get_any_available_chat_model(client: LlamaStackClient):
     available_models = [
         model_id
