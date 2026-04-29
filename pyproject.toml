@@ -6,12 +6,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "ipykernel==7.0.0a0",
-    "llama-stack-client==0.5.0",
+    "llama-stack-client==0.7.0",
     "pre-commit>=4.2.0",
     "python-dotenv>=1.1.0",
     "streamlit>=1.44.1",
     "geocoder>=1.38.1",
-    "llama-stack==0.5.0",
+    "llama-stack==0.7.0",
     "scipy>=1.15.2",
     "matplotlib>=3.10.3",
     "openai>=1.75.0",
