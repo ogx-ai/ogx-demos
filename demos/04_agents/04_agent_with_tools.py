@@ -19,6 +19,11 @@ Learning Objectives:
 
 import os
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from termcolor import colored
 
 from demos.client_tools.ticker_data import get_ticker_data
@@ -31,6 +36,8 @@ from demos.shared.utils import can_model_chat, check_model_is_available, get_any
 
 
 def main(host: str, port: int, model_id: str | None = None):
+    if load_dotenv is not None:
+        load_dotenv()
     client = OgxClient(base_url=f"http://{host}:{port}")
 
     api_key = ""

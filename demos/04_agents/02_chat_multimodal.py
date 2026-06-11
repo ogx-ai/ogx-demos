@@ -22,6 +22,11 @@ import mimetypes
 from pathlib import Path
 
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from ogx_client import Agent, OgxClient
 from termcolor import colored
 
@@ -40,6 +45,8 @@ def _data_url_from_image(file_path: Path) -> str:
 
 
 def main(host: str, port: int, model_id: str | None = None):
+    if load_dotenv is not None:
+        load_dotenv()
     client = OgxClient(
         base_url=f"http://{host}:{port}",
     )

@@ -21,6 +21,11 @@ import inspect
 import os
 
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from ogx_client import OgxClient, Agent, AgentEventLogger
 from termcolor import colored
 
@@ -28,6 +33,8 @@ from demos.shared.utils import check_model_is_available, get_any_available_chat_
 
 
 def main(host: str, port: int, model_id: str | None = None):
+    if load_dotenv is not None:
+        load_dotenv()
     if "TAVILY_SEARCH_API_KEY" not in os.environ:
         print(
             colored(
@@ -41,12 +48,6 @@ def main(host: str, port: int, model_id: str | None = None):
         base_url=f"http://{host}:{port}",
         provider_data={"tavily_search_api_key": os.getenv("TAVILY_SEARCH_API_KEY")},
     )
-
-    available_shields = [shield.identifier for shield in client.shields.list()]
-    if not available_shields:
-        print(colored("No available shields. Disabling safety.", "yellow"))
-    else:
-        print(f"Available shields found: {available_shields}")
 
     if model_id is None:
         model_id = get_any_available_chat_model(client)
@@ -63,8 +64,6 @@ def main(host: str, port: int, model_id: str | None = None):
         "instructions": "",
         # OpenAI Responses tool schema requires a type discriminator.
         "tools": [{"type": "web_search"}],
-        "input_shields": available_shields,
-        "output_shields": available_shields,
         "enable_session_persistence": False,
     }
     allowed_params = set(inspect.signature(Agent.__init__).parameters)

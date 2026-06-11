@@ -22,6 +22,11 @@ import time
 from pathlib import Path
 
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from ogx_client import OgxClient
 from termcolor import colored
 
@@ -30,7 +35,7 @@ from demos.shared.utils import (
     download_documents,
     check_model_is_available,
     get_any_available_chat_model,
-    get_any_available_embedding_model,
+    resolve_embedding_model,
     get_embedding_dimension,
 )
 
@@ -41,6 +46,8 @@ def main(
     model_id: str | None = None,
     embedding_model_id: str | None = None,
 ):
+    if load_dotenv is not None:
+        load_dotenv()
     urls = [
         "https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/memory_optimizations.rst",
         "https://raw.githubusercontent.com/pytorch/torchtune/main/docs/source/tutorials/chat.rst",
@@ -63,7 +70,7 @@ def main(
 
     print(f"Using model: {model_id}")
 
-    embedding_model = embedding_model_id or get_any_available_embedding_model(client)
+    embedding_model = resolve_embedding_model(client, embedding_model_id)
     if embedding_model is None:
         return
 

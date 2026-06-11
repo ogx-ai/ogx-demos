@@ -21,6 +21,11 @@ import os
 import uuid
 
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from ogx_client import AgentEventLogger, OgxClient
 from ogx_client.lib.agents.react.agent import ReActAgent
 from termcolor import colored
@@ -53,6 +58,8 @@ def torchtune(query: str = "torchtune"):  # noqa: ARG001
 
 
 def main(host: str, port: int, model_id: str | None = None):
+    if load_dotenv is not None:
+        load_dotenv()
     tavily_api_key = os.getenv("TAVILY_SEARCH_API_KEY")
     if not tavily_api_key:
         print(

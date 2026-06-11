@@ -23,6 +23,11 @@ from urllib.request import urlopen
 from uuid import uuid4
 
 import fire
+
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 import time
 from ogx_client import Agent, AgentEventLogger, OgxClient
 from termcolor import colored
@@ -31,7 +36,7 @@ from demos.shared.utils import (
     can_model_chat,
     check_model_is_available,
     get_any_available_chat_model,
-    get_any_available_embedding_model,
+    resolve_embedding_model,
     get_embedding_dimension,
 )
 
@@ -42,6 +47,8 @@ def main(
     model_id: str | None = None,
     embedding_model_id: str | None = None,
 ):
+    if load_dotenv is not None:
+        load_dotenv()
     urls = [
         "memory_optimizations.rst",
         "chat.rst",
@@ -74,7 +81,7 @@ def main(
 
     print(f"Using model: {model_id}")
 
-    embedding_model = embedding_model_id or get_any_available_embedding_model(client)
+    embedding_model = resolve_embedding_model(client, embedding_model_id)
     if embedding_model is None:
         return
 
