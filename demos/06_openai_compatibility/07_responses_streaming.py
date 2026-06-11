@@ -80,24 +80,27 @@ def main(
 
     # --- Example 2: Streaming with include_usage in stream_options ---
     print(colored("\n--- Streaming with stream_options (include_usage) ---", "cyan"))
-    stream = client.responses.create(
-        model=resolved_model,
-        input="List three benefits of open-source AI.",
-        stream=True,
-        stream_options={"include_usage": True},
-    )
-    for event in stream:
-        if event.type == "response.output_text.delta":
-            print(event.delta, end="", flush=True)
-        elif event.type == "response.completed":
-            print()
-            resp = event.response
-            print(colored(f"\nStatus: {resp.status}", "green"))
-            if hasattr(resp, "usage") and resp.usage:
-                print(colored(f"Usage - Input tokens: {resp.usage.input_tokens}", "green"))
-                print(colored(f"Usage - Output tokens: {resp.usage.output_tokens}", "green"))
-                if hasattr(resp.usage, "total_tokens"):
-                    print(colored(f"Usage - Total tokens: {resp.usage.total_tokens}", "green"))
+    try:
+        stream = client.responses.create(
+            model=resolved_model,
+            input="List three benefits of open-source AI.",
+            stream=True,
+            stream_options={"include_usage": True},
+        )
+        for event in stream:
+            if event.type == "response.output_text.delta":
+                print(event.delta, end="", flush=True)
+            elif event.type == "response.completed":
+                print()
+                resp = event.response
+                print(colored(f"\nStatus: {resp.status}", "green"))
+                if hasattr(resp, "usage") and resp.usage:
+                    print(colored(f"Usage - Input tokens: {resp.usage.input_tokens}", "green"))
+                    print(colored(f"Usage - Output tokens: {resp.usage.output_tokens}", "green"))
+                    if hasattr(resp.usage, "total_tokens"):
+                        print(colored(f"Usage - Total tokens: {resp.usage.total_tokens}", "green"))
+    except Exception as exc:
+        print(colored(f"Not supported: {exc}", "yellow"))
 
 
 if __name__ == "__main__":
