@@ -84,10 +84,6 @@ echo "=== OGX Demos Test Suite ==="
 echo "Server: $HOST:$PORT  Timeout: ${TIMEOUT}s"
 echo ""
 
-# 00 Setup
-echo "--- 00_setup ---"
-run_demo demos.00_setup.01_list_providers
-
 # 01 Foundations
 echo "--- 01_foundations ---"
 run_demo demos.01_foundations.01_client_setup

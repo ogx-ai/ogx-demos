@@ -155,6 +155,9 @@ def resolve_embedding_model(client: OgxClient, model_id: str | None = None) -> s
     return _get_any_embedding_model(client)
 
 
+get_any_available_embedding_model = resolve_embedding_model
+
+
 def _get_any_embedding_model(client: OgxClient) -> str | None:
     embedding_models = [
         _get_model_id(m)
