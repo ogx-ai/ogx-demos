@@ -48,7 +48,7 @@ def main(
     _maybe_load_dotenv()
 
     client = OgxClient(base_url=f"http://{host}:{port}")
-    resolved_model = model_id or os.getenv("OGX_MODEL")
+    resolved_model = model_id or os.getenv("OGX_MODEL") or None
     if resolved_model is None:
         resolved_model = get_any_available_chat_model(client)
         if resolved_model is None:

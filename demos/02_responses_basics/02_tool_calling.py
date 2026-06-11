@@ -39,7 +39,7 @@ def _maybe_load_dotenv() -> None:
 
 
 def _resolve_model(client: OgxClient, model_id: str | None) -> str | None:
-    resolved_model = model_id or os.getenv("OGX_MODEL")
+    resolved_model = model_id or os.getenv("OGX_MODEL") or None
     if resolved_model is None:
         return get_any_available_chat_model(client)
     if not check_model_is_available(client, resolved_model):

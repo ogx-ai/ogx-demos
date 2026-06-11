@@ -30,7 +30,7 @@ from termcolor import colored
 
 from demos.shared.utils import (
     download_documents,
-    get_any_available_embedding_model,
+    resolve_embedding_model,
     get_embedding_dimension,
 )
 
@@ -137,7 +137,7 @@ def main(
     _maybe_load_dotenv()
 
     client = OgxClient(base_url=f"http://{host}:{port}")
-    embedding_model = embedding_model_id or get_any_available_embedding_model(client)
+    embedding_model = resolve_embedding_model(client, embedding_model_id)
     if embedding_model is None:
         return
 

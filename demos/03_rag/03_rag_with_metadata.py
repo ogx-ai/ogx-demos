@@ -31,7 +31,7 @@ from demos.shared.utils import (
     can_model_chat,
     check_model_is_available,
     get_any_available_chat_model,
-    get_any_available_embedding_model,
+    resolve_embedding_model,
     get_embedding_dimension,
 )
 
@@ -79,7 +79,7 @@ def main(
     _maybe_load_dotenv()
 
     client = OgxClient(base_url=f"http://{host}:{port}")
-    resolved_model = model_id or os.getenv("OGX_MODEL")
+    resolved_model = model_id or os.getenv("OGX_MODEL") or None
     if resolved_model is None:
         resolved_model = get_any_available_chat_model(client)
         if resolved_model is None:
@@ -96,7 +96,7 @@ def main(
             )
             return
 
-    embedding_model = embedding_model_id or get_any_available_embedding_model(client)
+    embedding_model = resolve_embedding_model(client, embedding_model_id)
     if embedding_model is None:
         return
 

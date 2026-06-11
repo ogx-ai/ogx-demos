@@ -42,38 +42,54 @@ def _get_model_id(model) -> str | None:
     return None
 
 
+def resolve_model(client: OgxClient, model_id: str | None, env_var: str = "OGX_CHAT_MODEL") -> str | None:
+    """Pick a chat model: explicit id > env var > OGX_CHAT_MODEL > auto-select.
+
+    Auto-select filters by model_type == 'llm' and probes chat capability.
+    """
+    resolved = model_id or os.getenv(env_var) or os.getenv("OGX_CHAT_MODEL") or None
+    if resolved:
+        return resolved
+
+    candidates = [
+        _get_model_id(m)
+        for m in _list_models(client)
+        if _is_llm_model(m) and _get_model_id(m)
+    ]
+
+    for mid in candidates:
+        if can_model_chat(client, mid):
+            return mid
+
+    print(colored("No available chat-capable models found.", "red"))
+    return None
+
+
 def resolve_openai_model(client, model_id: str | None) -> str | None:
-    """Pick a model: explicit id > env var > first available model.
+    """Pick a model for OpenAI-compatible demos.
 
     Works with any OpenAI-compatible client that exposes ``client.models.list()``.
     """
-    resolved = model_id or os.getenv("OGX_MODEL")
+    resolved = model_id or os.getenv("OGX_CHAT_MODEL") or os.getenv("OGX_MODEL") or None
     if resolved:
         return resolved
     models = _list_models(client)
     for m in models:
         candidate = _get_model_id(m)
-        if not candidate:
-            continue
-        candidate_l = candidate.lower()
-        if _is_llm_model(m) and "guard" not in candidate_l and "embed" not in candidate_l:
+        if candidate and _is_llm_model(m):
             return candidate
     print(colored("No available chat models found.", "red"))
     return None
 
 
 def check_model_is_available(client: OgxClient, model: str) -> bool:
-    available_models = [
-        model_id
-        for m in _list_models(client)
-        for model_id in [_get_model_id(m)]
-        if model_id and _is_llm_model(m) and "guard" not in model_id
-    ]
+    all_ids = [_get_model_id(m) for m in _list_models(client)]
+    all_ids = [mid for mid in all_ids if mid]
 
-    if model not in available_models:
+    if model not in all_ids:
         print(
             colored(
-                f"Model `{model}` not found. Available models:\n\n{available_models}\n",
+                f"Model `{model}` not found. Available models:\n\n{all_ids}\n",
                 "red",
             )
         )
@@ -82,22 +98,7 @@ def check_model_is_available(client: OgxClient, model: str) -> bool:
     return True
 
 
-def get_any_available_model(client: OgxClient):
-    available_models = [
-        model_id
-        for m in _list_models(client)
-        for model_id in [_get_model_id(m)]
-        if model_id and _is_llm_model(m) and "guard" not in model_id
-    ]
-    if not available_models:
-        print(colored("No available models.", "red"))
-        return None
-
-    return available_models[0]
-
-
 def can_model_chat(client: OgxClient, model_id: str) -> bool:
-    # Lightweight probe to ensure the model supports chat completions.
     try:
         client.chat.completions.create(
             model=model_id,
@@ -109,36 +110,56 @@ def can_model_chat(client: OgxClient, model_id: str) -> bool:
     return True
 
 
-def get_any_available_chat_model(client: OgxClient):
-    available_models = [
-        model_id
+def get_any_available_model(client: OgxClient):
+    resolved = os.getenv("OGX_CHAT_MODEL") or None
+    if resolved:
+        return resolved
+    candidates = [
+        _get_model_id(m)
         for m in _list_models(client)
-        for model_id in [_get_model_id(m)]
-        if model_id and _is_llm_model(m) and "guard" not in model_id
+        if _is_llm_model(m) and _get_model_id(m)
     ]
-    if not available_models:
+    if not candidates:
+        print(colored("No available models.", "red"))
+        return None
+    return candidates[0]
+
+
+def get_any_available_chat_model(client: OgxClient):
+    resolved = os.getenv("OGX_CHAT_MODEL") or None
+    if resolved:
+        return resolved
+
+    candidates = [
+        _get_model_id(m)
+        for m in _list_models(client)
+        if _is_llm_model(m) and _get_model_id(m)
+    ]
+    if not candidates:
         print(colored("No available models.", "red"))
         return None
 
-    for model_id in available_models:
-        if can_model_chat(client, model_id):
-            return model_id
+    for mid in candidates:
+        if can_model_chat(client, mid):
+            return mid
 
     print(colored("No available chat-capable models.", "red"))
     return None
 
 
-def get_any_available_embedding_model(client: OgxClient) -> str | None:
+def resolve_embedding_model(client: OgxClient, model_id: str | None = None) -> str | None:
+    """Pick an embedding model: explicit id > OGX_EMBEDDING_MODEL > auto-select."""
+    resolved = model_id or os.getenv("OGX_EMBEDDING_MODEL") or None
+    if resolved:
+        return resolved
+    return _get_any_embedding_model(client)
+
+
+def _get_any_embedding_model(client: OgxClient) -> str | None:
     embedding_models = [
-        model_id
+        _get_model_id(m)
         for m in _list_models(client)
-        for model_id in [_get_model_id(m)]
-        if model_id
-        and (
-            _get_model_type(m) == "embedding"
-            or "embedding" in model_id.lower()
-            or "embed" in model_id.lower()
-        )
+        if _get_model_id(m) and _get_model_type(m) == "embedding"
     ]
     if not embedding_models:
         print(colored("No available embedding models.", "red"))
@@ -146,6 +167,7 @@ def get_any_available_embedding_model(client: OgxClient) -> str | None:
     return embedding_models[0]
 
 
+# Keep old name as alias
 def get_embedding_dimension(client: OgxClient, model_id: str) -> int | None:
     for m in _list_models(client):
         if _get_model_id(m) == model_id:
