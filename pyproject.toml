@@ -19,6 +19,7 @@ dependencies = [
     "uvicorn[standard]>=0.34.0",
     "python-multipart>=0.0.31",
     "yfinance>=0.2.0",
+    "trafilatura>=2.0.0",
 ]
 
 [tool.ruff]
